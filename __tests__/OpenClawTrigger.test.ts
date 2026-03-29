@@ -28,10 +28,13 @@ describe('OpenClawTrigger node description', () => {
     expect(node.description.webhooks![0].path).toBe('openclaw');
   });
 
-  it('has eventType and webhookNotice properties', () => {
+  it('has eventType, webhookNotice, verifyToken, webhookToken, includeHeaders properties', () => {
     const propNames = node.description.properties.map((p) => p.name);
     expect(propNames).toContain('eventType');
     expect(propNames).toContain('webhookNotice');
+    expect(propNames).toContain('verifyToken');
+    expect(propNames).toContain('webhookToken');
+    expect(propNames).toContain('includeHeaders');
   });
 
   it('has three event type options', () => {
@@ -40,5 +43,19 @@ describe('OpenClawTrigger node description', () => {
     expect(eventTypeProp!.type).toBe('options');
     const opts = (eventTypeProp as { options?: unknown[] }).options;
     expect(opts).toHaveLength(3);
+  });
+
+  it('webhookToken is a password field', () => {
+    const prop = node.description.properties.find((p) => p.name === 'webhookToken');
+    expect(prop).toBeDefined();
+    expect(prop!.type).toBe('string');
+    const typeOptions = (prop as { typeOptions?: { password?: boolean } }).typeOptions;
+    expect(typeOptions?.password).toBe(true);
+  });
+
+  it('webhookToken only shows when verifyToken is true', () => {
+    const prop = node.description.properties.find((p) => p.name === 'webhookToken');
+    expect(prop).toBeDefined();
+    expect(prop!.displayOptions?.show?.verifyToken).toEqual([true]);
   });
 });

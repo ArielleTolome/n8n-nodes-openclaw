@@ -28,6 +28,7 @@ export class OpenClaw implements INodeType {
     defaults: {
       name: 'OpenClaw',
     },
+    usableAsTool: true,
     inputs: ['main'],
     outputs: ['main'],
     credentials: [
@@ -342,10 +343,16 @@ export class OpenClaw implements INodeType {
             description: 'Manually run a cron job immediately',
             action: 'Run a cron job now',
           },
+          {
+            name: 'Update',
+            value: 'update',
+            description: 'Update an existing cron job schedule or task',
+            action: 'Update a cron job',
+          },
         ],
         default: 'list',
       },
-      // Cron: Add
+      // Cron: Add/Update/Remove/Run
       {
         displayName: 'Cron Name',
         name: 'cronName',
@@ -353,7 +360,7 @@ export class OpenClaw implements INodeType {
         default: '',
         required: true,
         displayOptions: {
-          show: { resource: ['cron'], operation: ['add', 'remove', 'run'] },
+          show: { resource: ['cron'], operation: ['add', 'remove', 'run', 'update'] },
         },
         description: 'The name/identifier for the cron job',
       },
@@ -363,7 +370,7 @@ export class OpenClaw implements INodeType {
         type: 'string',
         default: '0 * * * *',
         required: true,
-        displayOptions: { show: { resource: ['cron'], operation: ['add'] } },
+        displayOptions: { show: { resource: ['cron'], operation: ['add', 'update'] } },
         description: 'Cron expression (e.g. "0 * * * *" for every hour)',
       },
       {
@@ -373,7 +380,7 @@ export class OpenClaw implements INodeType {
         typeOptions: { rows: 3 },
         default: '',
         required: true,
-        displayOptions: { show: { resource: ['cron'], operation: ['add'] } },
+        displayOptions: { show: { resource: ['cron'], operation: ['add', 'update'] } },
         description: 'The task or prompt to run on schedule',
       },
       {
@@ -381,7 +388,7 @@ export class OpenClaw implements INodeType {
         name: 'cronSessionKey',
         type: 'string',
         default: 'main',
-        displayOptions: { show: { resource: ['cron'], operation: ['add'] } },
+        displayOptions: { show: { resource: ['cron'], operation: ['add', 'update'] } },
         description: 'Session to run the cron task against',
       },
 
@@ -664,6 +671,21 @@ export class OpenClaw implements INodeType {
               tool: 'cron',
               action: 'run',
               args: { name },
+              sessionKey: 'main',
+              dryRun: false,
+            });
+          } else if (operation === 'update') {
+            const name = this.getNodeParameter('cronName', i) as string;
+            requireNonEmpty(name, 'Cron Name', this.getNode());
+            const schedule = this.getNodeParameter('cronSchedule', i) as string;
+            validateCronExpression(schedule, this.getNode());
+            const task = this.getNodeParameter('cronTask', i) as string;
+            requireNonEmpty(task, 'Task / Prompt', this.getNode());
+            const cronSessionKey = this.getNodeParameter('cronSessionKey', i, 'main') as string;
+            responseData = await openClawApiRequest.call(this, 'POST', '/tools/invoke', {
+              tool: 'cron',
+              action: 'update',
+              args: { name, schedule, task, sessionKey: cronSessionKey },
               sessionKey: 'main',
               dryRun: false,
             });

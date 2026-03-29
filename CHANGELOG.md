@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] — 2026-03-29
+
+### Added
+- **Cron Update operation**: update an existing cron job's schedule, task, and session key
+- **Trigger: Webhook token verification** — verify incoming Bearer token against expected value
+- **Trigger: Include Raw Headers** — optionally pass HTTP headers through to output data
+- `usableAsTool: true` on OpenClaw action node (enables AI tool integration in n8n 1.x)
+- Improved SVG icon (claw shape with purple palette)
+- 3 new tests for trigger properties (total: 59 tests)
+
 ## [0.1.4] — 2026-03-29
 
 ### Added

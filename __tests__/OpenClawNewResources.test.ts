@@ -116,6 +116,12 @@ describe('OpenClaw — total resource count', () => {
       (p) => p.name === 'resource' && p.type === 'options',
     );
     const options = (resourceProp as { options?: unknown[] }).options ?? [];
+    // Agent, Chat Completion, Cron, Memory, Session, Tool
     expect(options.length).toBe(6);
+  });
+
+  it('has usableAsTool set to true', () => {
+    const node = new OpenClaw();
+    expect(node.description.usableAsTool).toBe(true);
   });
 });

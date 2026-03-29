@@ -51,7 +51,7 @@ describe('OpenClaw node description', () => {
     expect(opValues).toContain('runAgent');
   });
 
-  it('has cron operations List, Add, Remove, Run', () => {
+  it('has cron operations List, Add, Remove, Run, Update', () => {
     const cronOps = node.description.properties.find(
       (p) =>
         p.name === 'operation' &&
@@ -64,6 +64,7 @@ describe('OpenClaw node description', () => {
     expect(opValues).toContain('add');
     expect(opValues).toContain('remove');
     expect(opValues).toContain('run');
+    expect(opValues).toContain('update');
   });
 
   it('has session operations List, Send Message, Get History, Spawn', () => {

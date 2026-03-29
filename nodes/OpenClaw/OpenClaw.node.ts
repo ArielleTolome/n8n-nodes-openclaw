@@ -51,7 +51,9 @@ export class OpenClaw implements INodeType {
         noDataExpression: true,
         options: [
           { name: 'Agent', value: 'agent' },
+          { name: 'Chat Completion', value: 'chat' },
           { name: 'Cron', value: 'cron' },
+          { name: 'Memory', value: 'memory' },
           { name: 'Session', value: 'session' },
           { name: 'Tool', value: 'tool' },
         ],
@@ -382,6 +384,135 @@ export class OpenClaw implements INodeType {
         displayOptions: { show: { resource: ['cron'], operation: ['add'] } },
         description: 'Session to run the cron task against',
       },
+
+      // ─────────────────────────────────────
+      // CHAT COMPLETION operations
+      // ─────────────────────────────────────
+      {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        noDataExpression: true,
+        displayOptions: { show: { resource: ['chat'] } },
+        options: [
+          {
+            name: 'Complete',
+            value: 'complete',
+            description: 'Send a chat completion request (OpenAI-compatible)',
+            action: 'Send a chat completion',
+          },
+        ],
+        default: 'complete',
+      },
+      {
+        displayName: 'Model',
+        name: 'chatModel',
+        type: 'string',
+        default: '',
+        displayOptions: { show: { resource: ['chat'], operation: ['complete'] } },
+        description:
+          'Model to use (e.g. anthropic/claude-sonnet-4-5). Leave empty for gateway default.',
+      },
+      {
+        displayName: 'Messages (JSON)',
+        name: 'chatMessages',
+        type: 'json',
+        default:
+          '[{"role":"user","content":"Hello, what can you do?"}]',
+        required: true,
+        displayOptions: { show: { resource: ['chat'], operation: ['complete'] } },
+        description:
+          'Messages array in OpenAI format: [{"role":"user","content":"..."}]',
+      },
+      {
+        displayName: 'Max Tokens',
+        name: 'chatMaxTokens',
+        type: 'number',
+        default: 1024,
+        displayOptions: { show: { resource: ['chat'], operation: ['complete'] } },
+        description: 'Maximum tokens to generate',
+      },
+      {
+        displayName: 'Temperature',
+        name: 'chatTemperature',
+        type: 'number',
+        typeOptions: { minValue: 0, maxValue: 2, numberStepSize: 0.1 },
+        default: 0.7,
+        displayOptions: { show: { resource: ['chat'], operation: ['complete'] } },
+        description: 'Sampling temperature (0-2). Lower = more focused.',
+      },
+      {
+        displayName: 'Stream',
+        name: 'chatStream',
+        type: 'boolean',
+        default: false,
+        displayOptions: { show: { resource: ['chat'], operation: ['complete'] } },
+        description:
+          'Whether to stream the response. Note: n8n does not support streaming; disable for normal use.',
+      },
+
+      // ─────────────────────────────────────
+      // MEMORY operations
+      // ─────────────────────────────────────
+      {
+        displayName: 'Operation',
+        name: 'operation',
+        type: 'options',
+        noDataExpression: true,
+        displayOptions: { show: { resource: ['memory'] } },
+        options: [
+          {
+            name: 'Search',
+            value: 'search',
+            description: 'Search stored memories',
+            action: 'Search memories',
+          },
+          {
+            name: 'Store',
+            value: 'store',
+            description: 'Store a new memory',
+            action: 'Store a memory',
+          },
+        ],
+        default: 'search',
+      },
+      // Memory: Search
+      {
+        displayName: 'Query',
+        name: 'memoryQuery',
+        type: 'string',
+        default: '',
+        required: true,
+        displayOptions: { show: { resource: ['memory'], operation: ['search'] } },
+        description: 'The search query to find relevant memories',
+      },
+      {
+        displayName: 'Limit',
+        name: 'memoryLimit',
+        type: 'number',
+        default: 10,
+        displayOptions: { show: { resource: ['memory'], operation: ['search'] } },
+        description: 'Maximum number of memories to return',
+      },
+      // Memory: Store
+      {
+        displayName: 'Text',
+        name: 'memoryText',
+        type: 'string',
+        typeOptions: { rows: 4 },
+        default: '',
+        required: true,
+        displayOptions: { show: { resource: ['memory'], operation: ['store'] } },
+        description: 'The text content to store in memory',
+      },
+      {
+        displayName: 'User ID',
+        name: 'memoryUserId',
+        type: 'string',
+        default: '',
+        displayOptions: { show: { resource: ['memory'], operation: ['store'] } },
+        description: 'Optional user ID to scope the memory',
+      },
     ],
   };
 
@@ -538,6 +669,80 @@ export class OpenClaw implements INodeType {
             });
           } else {
             throw new NodeOperationError(this.getNode(), `Unknown cron operation: ${operation}`);
+          }
+        } else if (resource === 'chat') {
+          if (operation === 'complete') {
+            const chatModel = this.getNodeParameter('chatModel', i, '') as string;
+            const chatMessagesRaw = this.getNodeParameter('chatMessages', i) as string | IDataObject[];
+            const maxTokens = this.getNodeParameter('chatMaxTokens', i, 1024) as number;
+            const temperature = this.getNodeParameter('chatTemperature', i, 0.7) as number;
+            const stream = this.getNodeParameter('chatStream', i, false) as boolean;
+
+            let messages: IDataObject[];
+            if (typeof chatMessagesRaw === 'string') {
+              try {
+                const parsed = JSON.parse(chatMessagesRaw) as unknown;
+                if (!Array.isArray(parsed)) {
+                  throw new NodeOperationError(
+                    this.getNode(),
+                    'Messages must be a JSON array of {role, content} objects',
+                  );
+                }
+                messages = parsed as IDataObject[];
+              } catch (e) {
+                if (e instanceof NodeOperationError) throw e;
+                throw new NodeOperationError(
+                  this.getNode(),
+                  `Messages must be valid JSON: ${(e as Error).message}`,
+                );
+              }
+            } else {
+              messages = chatMessagesRaw as IDataObject[];
+            }
+
+            if (!messages.length) {
+              throw new NodeOperationError(this.getNode(), 'Messages array cannot be empty');
+            }
+
+            const body: IDataObject = { messages, max_tokens: maxTokens, temperature, stream };
+            if (chatModel) body.model = chatModel;
+
+            responseData = await openClawApiRequest.call(
+              this,
+              'POST',
+              '/v1/chat/completions',
+              body,
+            );
+          } else {
+            throw new NodeOperationError(this.getNode(), `Unknown chat operation: ${operation}`);
+          }
+        } else if (resource === 'memory') {
+          if (operation === 'search') {
+            const query = this.getNodeParameter('memoryQuery', i) as string;
+            requireNonEmpty(query, 'Query', this.getNode());
+            const limit = this.getNodeParameter('memoryLimit', i, 10) as number;
+            responseData = await openClawApiRequest.call(this, 'POST', '/tools/invoke', {
+              tool: 'memory_search',
+              action: 'json',
+              args: { query, limit },
+              sessionKey: 'main',
+              dryRun: false,
+            });
+          } else if (operation === 'store') {
+            const text = this.getNodeParameter('memoryText', i) as string;
+            requireNonEmpty(text, 'Text', this.getNode());
+            const userId = this.getNodeParameter('memoryUserId', i, '') as string;
+            const storeArgs: IDataObject = { text };
+            if (userId) storeArgs.userId = userId;
+            responseData = await openClawApiRequest.call(this, 'POST', '/tools/invoke', {
+              tool: 'memory_store',
+              action: 'json',
+              args: storeArgs,
+              sessionKey: 'main',
+              dryRun: false,
+            });
+          } else {
+            throw new NodeOperationError(this.getNode(), `Unknown memory operation: ${operation}`);
           }
         } else {
           throw new NodeOperationError(this.getNode(), `Unknown resource: ${resource}`);

@@ -1,22 +1,23 @@
 {
-  "name": "n8n-nodes-openclaw",
-  "version": "0.1.7",
-  "description": "n8n community nodes for OpenClaw — connect n8n workflows to any OpenClaw gateway for multi-agent automation",
+  "name": "n8n-nodes-clawai",
+  "version": "1.0.0",
+  "description": "n8n community nodes for OpenClaw — trigger workflows from AI agent events, run agents, manage sessions, cron jobs, and more",
   "keywords": [
     "n8n-community-node-package",
     "openclaw",
     "ai-agents",
-    "automation"
+    "automation",
+    "clawai"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/ArielleTolome/n8n-nodes-openclaw",
+  "homepage": "https://github.com/ArielleTolome/n8n-nodes-clawai",
   "author": {
     "name": "Ariel Tolome",
     "email": ""
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ArielleTolome/n8n-nodes-openclaw.git"
+    "url": "git+https://github.com/ArielleTolome/n8n-nodes-clawai.git"
   },
   "main": "index.js",
   "scripts": {
@@ -69,5 +70,8 @@
     "moduleNameMapper": {
       "^n8n-workflow$": "<rootDir>/node_modules/n8n-workflow"
     }
+  },
+  "bugs": {
+    "url": "https://github.com/ArielleTolome/n8n-nodes-clawai/issues"
   }
 }

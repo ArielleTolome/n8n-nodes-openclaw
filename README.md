@@ -1,7 +1,7 @@
-# n8n-nodes-openclaw
+# n8n-nodes-clawai
 
-[![npm version](https://badge.fury.io/js/n8n-nodes-openclaw.svg)](https://www.npmjs.com/package/n8n-nodes-openclaw)
-[![CI](https://github.com/ArielleTolome/n8n-nodes-openclaw/actions/workflows/ci.yml/badge.svg)](https://github.com/ArielleTolome/n8n-nodes-openclaw/actions/workflows/ci.yml)
+[![npm version](https://badge.fury.io/js/n8n-nodes-clawai.svg)](https://www.npmjs.com/package/n8n-nodes-clawai)
+[![CI](https://github.com/ArielleTolome/n8n-nodes-clawai/actions/workflows/ci.yml/badge.svg)](https://github.com/ArielleTolome/n8n-nodes-clawai/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Community n8n nodes for [OpenClaw](https://github.com/openclaw/openclaw) — a multi-agent AI gateway. Connect your n8n workflows to any OpenClaw instance to send messages, run agents, invoke tools, manage cron jobs, and receive real-time events.
@@ -25,16 +25,16 @@ Community n8n nodes for [OpenClaw](https://github.com/openclaw/openclaw) — a m
 
 1. In n8n, go to **Settings → Community Nodes**
 2. Click **Install a community node**
-3. Enter `n8n-nodes-openclaw`
+3. Enter `n8n-nodes-clawai`
 4. Click **Install**
 
 ### Manual (npm)
 
 ```bash
-npm install n8n-nodes-openclaw
+npm install n8n-nodes-clawai
 ```
 
-> **Publishing:** Run `npm publish` manually after authenticating with npm. The package is available on [npmjs.com](https://www.npmjs.com/package/n8n-nodes-openclaw).
+> **Publishing:** Run `npm publish` manually after authenticating with npm. The package is available on [npmjs.com](https://www.npmjs.com/package/n8n-nodes-clawai).
 
 ---
 
@@ -252,7 +252,7 @@ Use the `Custom` option in the Tool dropdown for any other registered tool.
 ## Development
 
 ```bash
-git clone https://github.com/ArielleTolome/n8n-nodes-openclaw.git
+git clone https://github.com/ArielleTolome/n8n-nodes-clawai.git
 cd n8n-nodes-openclaw
 npm install
 npm run build    # compile TypeScript

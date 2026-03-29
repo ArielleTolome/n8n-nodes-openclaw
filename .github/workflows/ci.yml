@@ -38,6 +38,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Security audit
+        run: npm audit --audit-level=high
+
   release-check:
     name: Verify release on tag
     if: startsWith(github.ref, 'refs/tags/v')

@@ -42,14 +42,18 @@ npm install n8n-nodes-openclaw
 
 ### OpenClaw (Action Node)
 
-Interact with your OpenClaw gateway. Supports four resources:
+Interact with your OpenClaw gateway. Supports six resources:
 
 | Resource | Operations |
 |----------|-----------|
 | **Agent** | Wake, Run Agent |
-| **Tool** | Invoke |
+| **Chat Completion** | Complete (OpenAI-compatible) |
+| **Cron** | List, Add, Update, Remove, Run |
+| **Memory** | Search, Store |
 | **Session** | List, Send Message, Get History, Spawn |
-| **Cron** | List, Add, Remove, Run |
+| **Tool** | Invoke (10 preset tools + custom) |
+
+> The node is marked `usableAsTool: true` — it can be used directly as a tool inside an n8n AI Agent node.
 
 ### OpenClaw Trigger (Webhook Node)
 
@@ -60,6 +64,10 @@ Receives events from OpenClaw. Exposes a webhook URL you paste into your OpenCla
 | Any Event | All POST payloads |
 | Agent Completion | When an agent finishes a task |
 | Wake Event | When a wake/system event fires |
+
+**Security features:**
+- Optional webhook token verification (checks `Authorization: Bearer <token>`)
+- Optional raw header passthrough for custom validation
 
 ---
 

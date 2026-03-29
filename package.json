@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-openclaw",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "n8n community nodes for OpenClaw — connect n8n workflows to any OpenClaw gateway for multi-agent automation",
   "keywords": [
     "n8n-community-node-package",
@@ -21,7 +21,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && npm run copy-icons",
-    "copy-icons": "copyfiles -u 1 \"nodes/**/*.svg\" dist/",
+    "copy-icons": "copyfiles -u 0 \"nodes/**/*.svg\" dist/",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials --ext .ts",

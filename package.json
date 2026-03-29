@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-openclaw",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "n8n community nodes for OpenClaw — connect n8n workflows to any OpenClaw gateway for multi-agent automation",
   "keywords": [
     "n8n-community-node-package",
@@ -62,6 +62,9 @@
     "testEnvironment": "node",
     "testMatch": [
       "**/__tests__/**/*.test.ts"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^n8n-workflow$": "<rootDir>/node_modules/n8n-workflow"
+    }
   }
 }

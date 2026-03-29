@@ -9,7 +9,12 @@ import {
   NodeOperationError,
 } from 'n8n-workflow';
 
-import { openClawApiRequest } from '../shared/GenericFunctions';
+import {
+  openClawApiRequest,
+  requireNonEmpty,
+  validateCronExpression,
+  parseJsonArgs,
+} from '../shared/GenericFunctions';
 
 export class OpenClaw implements INodeType {
   description: INodeTypeDescription = {
@@ -394,6 +399,7 @@ export class OpenClaw implements INodeType {
         if (resource === 'agent') {
           if (operation === 'wake') {
             const message = this.getNodeParameter('message', i) as string;
+            requireNonEmpty(message, 'Message', this.getNode());
             const sessionKey = this.getNodeParameter('sessionKey', i, 'main') as string;
             responseData = await openClawApiRequest.call(this, 'POST', '/hooks/wake', {
               message,
@@ -401,6 +407,7 @@ export class OpenClaw implements INodeType {
             });
           } else if (operation === 'runAgent') {
             const prompt = this.getNodeParameter('prompt', i) as string;
+            requireNonEmpty(prompt, 'Prompt', this.getNode());
             const systemPrompt = this.getNodeParameter('systemPrompt', i, '') as string;
             const model = this.getNodeParameter('model', i, '') as string;
 
@@ -418,29 +425,16 @@ export class OpenClaw implements INodeType {
             const customToolName = this.getNodeParameter('customToolName', i, '') as string;
             const resolvedTool = toolName === '__custom__' ? customToolName : toolName;
 
-            if (!resolvedTool) {
-              throw new NodeOperationError(this.getNode(), 'Tool name is required');
-            }
+            requireNonEmpty(resolvedTool, 'Tool name', this.getNode());
 
             const toolAction = this.getNodeParameter('toolAction', i, 'json') as string;
-            const toolArgsRaw = this.getNodeParameter('toolArgs', i, '{}') as string | object;
+            requireNonEmpty(toolAction, 'Action', this.getNode());
+
+            const toolArgsRaw = this.getNodeParameter('toolArgs', i, '{}') as string | IDataObject;
             const toolSessionKey = this.getNodeParameter('toolSessionKey', i, 'main') as string;
             const dryRun = this.getNodeParameter('dryRun', i, false) as boolean;
 
-            let args: IDataObject;
-            if (typeof toolArgsRaw === 'string') {
-              try {
-                args = JSON.parse(toolArgsRaw) as IDataObject;
-              } catch {
-                throw new NodeOperationError(
-                  this.getNode(),
-                  'Arguments must be valid JSON',
-                  { itemIndex: i },
-                );
-              }
-            } else {
-              args = toolArgsRaw as IDataObject;
-            }
+            const args = parseJsonArgs(toolArgsRaw, this.getNode());
 
             responseData = await openClawApiRequest.call(this, 'POST', '/tools/invoke', {
               tool: resolvedTool,
@@ -483,6 +477,7 @@ export class OpenClaw implements INodeType {
             });
           } else if (operation === 'spawn') {
             const task = this.getNodeParameter('spawnTask', i) as string;
+            requireNonEmpty(task, 'Task', this.getNode());
             const label = this.getNodeParameter('spawnLabel', i, '') as string;
             const spawnArgs: IDataObject = { task };
             if (label) spawnArgs.label = label;
@@ -510,8 +505,11 @@ export class OpenClaw implements INodeType {
             });
           } else if (operation === 'add') {
             const name = this.getNodeParameter('cronName', i) as string;
+            requireNonEmpty(name, 'Cron Name', this.getNode());
             const schedule = this.getNodeParameter('cronSchedule', i) as string;
+            validateCronExpression(schedule, this.getNode());
             const task = this.getNodeParameter('cronTask', i) as string;
+            requireNonEmpty(task, 'Task / Prompt', this.getNode());
             const cronSessionKey = this.getNodeParameter('cronSessionKey', i, 'main') as string;
             responseData = await openClawApiRequest.call(this, 'POST', '/tools/invoke', {
               tool: 'cron',
